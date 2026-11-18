@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cartesiana em Movimento — v1.5</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#1c2939;background:#f5f7fa}*{box-sizing:border-box}body{margin:0}header{background:#163453;color:#fff;padding:12px 18px}header strong{font-size:1.15rem}header small{opacity:.8}main{max-width:1020px;margin:auto;padding:12px}.bar,.tools,.answer,.moves{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.bar{justify-content:space-between;margin-bottom:10px}button,select,input{font:inherit;min-height:44px;border:1px solid #8799ac;border-radius:9px;background:#fff;color:#162c45;padding:8px 11px}button{cursor:pointer}button.primary{background:#175e9b;color:white;border-color:#175e9b}button:disabled{opacity:.45}button:focus-visible,input:focus-visible,select:focus-visible,canvas:focus-visible,summary:focus-visible{outline:3px solid #d67c13;outline-offset:2px}details{background:white;border:1px solid #d9e2ed;border-radius:12px;margin-bottom:10px;padding:9px 12px}summary{cursor:pointer;font-weight:650;min-height:30px}label{display:flex;flex-direction:column;gap:3px;font-size:.83rem;font-weight:600}.settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px;padding-top:10px}.workspace{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}.card{background:white;border:1px solid #d9e2ed;border-radius:13px;padding:12px;min-width:0}.prompt{font-size:1.04rem;font-weight:650;margin:0 0 8px}.canvas-wrap{display:flex;justify-content:center;overflow:hidden}canvas{width:100%;max-width:740px;display:block;border:1px solid #b9c9d9;border-radius:9px;touch-action:none;background:white}.answer{margin-top:10px}.answer input{width:90px}.answer label{flex:0 1 110px}.tools{margin-top:9px}.feedback{min-height:45px;background:#eaf2f9;border-radius:9px;padding:10px;margin:10px 0 0}.muted{color:#526579;font-size:.85rem}.moves{justify-content:center;margin-top:9px}.moves button{min-width:66px;min-height:68px;font-size:2.2rem;font-weight:900;line-height:1;border:2px solid #315c83;background:#eef5fc;touch-action:manipulation}.moves button:active{background:#bcd9f0}.moves{gap:12px}.hidden{display:none!important}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}.small{font-size:.82rem}.stats{display:flex;gap:12px;margin:10px 0}.stats strong{font-size:1.2rem}table{border-collapse:collapse;width:100%;font-size:.78rem}th,td{padding:6px;border-bottom:1px solid #ddd;text-align:left}.scroll{overflow:auto;max-height:280px}footer{font-size:.77rem;color:#586a7c;padding:15px 3px}.contrast{background:#000;color:#fff}.contrast .card,.contrast details{background:#000;color:#fff;border-color:#fff}.contrast .feedback{background:#222;color:#fff}.contrast .muted,.contrast footer{color:#eee}.contrast button,.contrast input,.contrast select{border:2px solid #fff}@media(max-width:740px){.workspace{grid-template-columns:1fr}.card{padding:9px}main{padding:8px}.side{padding:10px}.bar{margin:4px 0 9px}.prompt{font-size:1rem}.answer{position:static;background:inherit;padding:8px 0;z-index:2;border-top:1px solid #e2e7ed}.answer button{flex:1}.moves button{min-width:60px;min-height:64px;font-size:2rem}.moves{gap:7px}canvas{max-height:none}}
+</style></head><body><header><strong>Cartesiana em Movimento</strong> <small>v1.5 · laboratório offline</small></header><main>
+<div class="bar"><strong>Explore e aprenda</strong><button id="new">Novo desafio ↻</button></div>
+<details id="settings"><summary>⚙ Configurações</summary><div class="settings">
+<label>Ano<select id="grade"><option value="6">6º ano</option><option value="7">7º ano</option></select></label>
+<label>Atividade<select id="activity"><option value="path">Caminho Cartesiano</option><option value="robot">Robô no Plano</option><option value="air">Controle Aéreo</option><option value="line">Reta Numérica</option></select></label>
+<label>Nível<select id="level"><option value="1">1 · Inicial</option><option value="2">2 · Intermediário</option><option value="3">3 · Desafio</option></select></label>
+<label>Visualização<select id="zoom"><option value="auto">Automática</option><option value="4">Ampliar (4)</option><option value="6">Média (6)</option><option value="10">Afastar (10)</option></select></label>
+<label>Contraste<select id="contrast"><option value="normal">Normal</option><option value="high">Alto contraste</option></select></label>
+</div></details>
+<div class="workspace"><section class="card"><p id="challengeText" class="prompt"></p><div class="canvas-wrap"><canvas id="canvas" tabindex="0" aria-describedby="sceneDescription" aria-label="Área matemática interativa. Use as setas para navegar e Enter para marcar a posição."></canvas></div>
+<div id="sceneDescription" class="sr-only"></div>
+<div class="answer" id="answerArea"><button id="submit" class="primary">Confirmar ponto</button><button id="hint">Preciso de uma dica</button></div>
+<p id="feedback" class="feedback" role="status" aria-live="polite">Toque para selecionar. Depois confirme.</p>
+<div class="moves" id="moveControls" aria-label="Navegação por teclado e toque"><button data-dir="left" aria-label="Esquerda">←</button><button data-dir="up" aria-label="Cima">↑</button><button data-dir="down" aria-label="Baixo">↓</button><button data-dir="right" aria-label="Direita">→</button></div>
+<p id="session" class="muted small" aria-live="off"></p><p id="cursorText" class="muted small" aria-live="polite"></p><button id="next" class="primary hidden">Próximo desafio →</button><p id="progress" class="muted small"></p>
+<div class="tools"><button id="restart">Reiniciar</button><button id="undo" class="hidden">Desfazer</button><button id="tilt">Inclinação (opcional)</button><span id="tiltStatus" class="muted small" role="status">Desligada</span><button id="describe">Descrever cena</button></div><p id="descriptionVisible" class="muted hidden"></p>
+</section></div>
+<footer>Cartesiana em Movimento Web v1.5 · BSD-3-Clause · funciona offline · sem cadastro, sem coleta de respostas.</footer></main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id),canvas=$('canvas'),ctx=canvas.getContext('2d');
+const names={path:'Caminho Cartesiano',robot:'Robô no Plano',air:'Controle Aéreo',line:'Reta Numérica'};
+const S={grade:6,activity:'path',level:1,zoom:'auto',challenge:null,cursor:{x:0,y:0},path:[],robot:{x:0,y:0},moves:0,ended:null,errors:0,tilt:false,tiltLast:0,tiltBase:null,tiltSample:null,wrong:null,robotTrail:[],robotUndo:[],robotMode:false,session:{done:0,correct:0},tiltAvailable:false};
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),pick=a=>a[rnd(0,a.length-1)],eq=(a,b)=>Math.abs(a-b)<.001,fmt=n=>Number(n).toLocaleString('pt-BR',{maximumFractionDigits:2}),pt=p=>`(${fmt(p.x)}; ${fmt(p.y)})`,clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+let G={},resizeObserver=null;
+function point(l,step=1){const low=S.grade===6?0:-l;return{x:rnd(Math.ceil(low/step),Math.floor(l/step))*step,y:rnd(Math.ceil(low/step),Math.floor(l/step))*step}}
+function challenge(){const c={id:Date.now()+'-'+Math.random().toString(36).slice(2,7)},l=S.level,a=S.activity,step=l===3?.5:1;
+ if(a==='path'){c.points=[];const n=l===1?2:l===2?3:4;while(c.points.length<n){const p=point(S.grade===6?5:4,step);if((p.x!==0||p.y!==0)&&c.points.every(q=>!eq(q.x,p.x)||!eq(q.y,p.y)))c.points.push(p)}c.prompt=`Marque, na ordem: ${c.points.map(pt).join(' → ')}`;}
+ if(a==='robot'){const limit=S.grade===6?6:5;let start,target,dx,dy;do{start=point(S.grade===6?5:4);target=point(S.grade===6?5:4);dx=target.x-start.x;dy=target.y-start.y}while(Math.abs(dx)+Math.abs(dy)<(l===1?2:l===2?4:5)|| (l>=2&&(dx===0||dy===0)));c.start=start;c.target=target;c.delta={x:dx,y:dy};c.minimum=Math.abs(dx)+Math.abs(dy);c.order=l===3?pick(['horizontal','vertical']):null;c.prompt=`Leve o robô de ${pt(start)} até ${pt(target)}${c.order?`, realizando primeiro TODO o deslocamento ${c.order==='horizontal'?'horizontal':'vertical'} e somente depois o ${c.order==='horizontal'?'vertical':'horizontal'}`:''}. ${l===1?'Encontre o caminho mínimo.':l===2?'Evite qualquer recuo.':'Respeite a ordem e use o mínimo de passos.'}`;}
+ if(a==='air'){const target=point(S.grade===6?5:4),candidates=[target];if(l>=2){const swapped={x:target.y,y:target.x};if(!eq(swapped.x,target.x)||!eq(swapped.y,target.y))candidates.push(swapped)}if(l===3&&S.grade===7){for(const p of [{x:-target.x,y:target.y},{x:target.x,y:-target.y},{x:-target.x,y:-target.y}])if(candidates.every(q=>!eq(q.x,p.x)||!eq(q.y,p.y)))candidates.push(p)}while(candidates.length<4){const p=point(S.grade===6?5:4);if(candidates.every(q=>!eq(q.x,p.x)||!eq(q.y,p.y)))candidates.push(p)}if(l===3&&S.grade===6){for(const p of [{x:target.x+1,y:target.y},{x:target.x,y:target.y+1}])if(p.x<=5&&p.y<=5&&candidates.every(q=>!eq(q.x,p.x)&&!eq(q.y,p.y)))candidates.push(p)}
+ // Distratores conceituais podem ser vizinhos: o toque usa sempre a aeronave mais próxima.
+ const chosen=candidates.slice(0,4);for(let i=chosen.length-1;i>0;i--){const j=rnd(0,i);[chosen[i],chosen[j]]=[chosen[j],chosen[i]]}
+ c.planes=chosen.map((p,i)=>({...p,id:String(i+1)}));c.answer=c.planes.find(p=>eq(p.x,target.x)&&eq(p.y,target.y));c.prompt=`Selecione a aeronave em ${pt(c.answer)} e confirme.`;}
+ if(a==='line'){const vals=S.grade===6?(l===1?[1,2,3]:l===2?[.5,1.5,2.5,3.5]:[.25,.75,1.25,1.75,2.25,2.75,3.25,3.75]):(l===1?[-3,-2,-1,1,2,3]:l===2?[-3.5,-2.5,-1.5,-.5,.5,1.5,2.5,3.5]:[-3.75,-2.75,-1.75,-.75,-.25,.25,.75,1.75,2.75,3.75]);c.target=pick(vals);c.step=l===1?1:l===2?.5:.25;c.prompt=`Marque ${fmt(c.target)} na reta numérica e confirme.`;}
+ return c}
+function bounds(){const c=S.challenge;if(!c)return{x0:0,x1:6,y0:0,y1:6};if(S.activity==='line'){let n=4;if(S.zoom!=='auto')n=Math.max(Math.ceil(Math.abs(c.target))+1,Number(S.zoom));if(c.step===.25)n=Math.min(n,S.grade===6?5:5);return S.grade===6?{x0:0,x1:n,y0:-1,y1:1}:{x0:-n,x1:n,y0:-1,y1:1}}
+ const pts=S.activity==='path'?c.points:S.activity==='robot'?[c.start,c.target]:c.planes;const vals=pts.flatMap(p=>[p.x,p.y]);let n=S.grade===6?Math.max(4,...vals):Math.max(3,...vals.map(Math.abs));n=Math.ceil(n)+1;if(S.zoom!=='auto')n=Math.max(Math.ceil(Math.max(...vals.map(Math.abs)))+1,Number(S.zoom));return S.grade===6?{x0:0,x1:n,y0:0,y1:n}:{x0:-n,x1:n,y0:-n,y1:n}}
+function dimensions(){const w=Math.max(250,Math.round(canvas.clientWidth)),h=S.activity==='line'?Math.min(240,Math.round(w*.45)):Math.min(w,Math.round(innerHeight*.7));return{w,h}}
+function draw(){const{w,h}=dimensions(),dpr=Math.min(devicePixelRatio||1,3),pw=Math.round(w*dpr),ph=Math.round(h*dpr);if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph}if(canvas.style.height!==h+'px')canvas.style.height=h+'px';ctx.setTransform(dpr,0,0,dpr,0,0);const hi=$('contrast').value==='high',fg=hi?'#fff':'#19344d',grid=hi?'#777':'#d8e1eb',bg=hi?'#000':'#fff';ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);const b=bounds(),m=Math.max(20,Math.min(34,w*.055)),line=S.activity==='line';const size=line?(w-2*m)/(b.x1-b.x0):Math.min((w-2*m)/(b.x1-b.x0),(h-2*m)/(b.y1-b.y0));const origin=line?{x:m-b.x0*size,y:h*.49}:{x:(w-(b.x1-b.x0)*size)/2-b.x0*size,y:(h+(b.y1-b.y0)*size)/2+b.y0*size};const xy=p=>({x:origin.x+p.x*size,y:origin.y-p.y*size});G={w,h,b,m,size,origin,xy,line};const xlo=xy({x:b.x0,y:0}).x,xhi=xy({x:b.x1,y:0}).x,ylo=xy({x:0,y:b.y0}).y,yhi=xy({x:0,y:b.y1}).y;
+ ctx.lineWidth=1;ctx.strokeStyle=grid;
+ if(!line){const fine=S.activity==='path'&&S.level===3?.5:1;for(let v=b.x0;v<=b.x1+.001;v+=fine){const x=xy({x:v,y:0}).x;stroke(x,ylo,x,yhi)}for(let v=b.y0;v<=b.y1+.001;v+=fine){const y=xy({x:0,y:v}).y;stroke(xlo,y,xhi,y)}}
+ ctx.strokeStyle=fg;ctx.lineWidth=2;stroke(xlo,origin.y,xhi,origin.y);if(!line)stroke(origin.x,ylo,origin.x,yhi);
+ const labelStep=[1,2,5,10].find(k=>k*size>=29)||10;ctx.fillStyle=fg;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`${clamp(size*.32,10,14)}px system-ui`;
+ for(let n=Math.ceil(b.x0/labelStep)*labelStep;n<=b.x1;n+=labelStep){const x=xy({x:n,y:0}).x;if(line)stroke(x,origin.y-7,x,origin.y+7);if(!n&& !line)continue;ctx.fillText(String(n),x,origin.y+(line?23:14))}
+ if(!line){for(let n=Math.ceil(b.y0/labelStep)*labelStep;n<=b.y1;n+=labelStep){if(!n)continue;const y=xy({x:0,y:n}).y;ctx.fillText(String(n),origin.x-15,y)}}
+ if(line){const fine=S.challenge.step;for(let n=b.x0;n<=b.x1+.001;n+=fine){const x=xy({x:n,y:0}).x;ctx.lineWidth=1;stroke(x,origin.y-(Number.isInteger(n)?9:6),x,origin.y+(Number.isInteger(n)?9:6))}}
+ const c=S.challenge;if(!c)return;
+ if(S.activity==='path'){ctx.strokeStyle=hi?'#00ffff':'#2472b0';ctx.lineWidth=3;ctx.beginPath();S.path.forEach((p,i)=>{const q=xy(p);i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)});ctx.stroke();S.path.forEach((p,i)=>dot(xy(p),hi?'#00ffff':'#2472b0',String(i+1),hi?'#000':'#fff'))}
+ if(S.activity==='robot'){if(S.robotTrail.length){ctx.strokeStyle=hi?'#ff0':'#d28b1c';ctx.lineWidth=2;ctx.beginPath();S.robotTrail.forEach((p,i)=>{const q=xy(p);i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)});ctx.stroke()}dot(xy(c.start),hi?'#00ffff':'#168265','I',hi?'#000':'#fff');dot(xy(c.target),hi?'#ff0':'#bc4e32','F',hi?'#000':'#fff');dot(xy(S.robot),hi?'#ff0':'#e29b18','R','#000')}
+ if(S.activity==='air')c.planes.forEach(p=>dot(xy(p),hi?'#ff0':'#175e9b',p.id,hi?'#000':'#fff'));
+ if(S.wrong!==null&&S.wrong!==undefined){const p=S.activity==='line'?xy({x:S.wrong,y:0}):S.activity==='air'?null:xy(S.wrong);if(p){ctx.strokeStyle=hi?'#f66':'#c33';ctx.lineWidth=2;stroke(p.x-9,p.y-9,p.x+9,p.y+9);stroke(p.x+9,p.y-9,p.x-9,p.y+9)}}
+ if(S.activity==='line')dot(xy({x:S.cursor.x,y:0}),hi?'#ff0':'#a93c78','◆',hi?'#000':'#fff');
+ else{const q=xy(S.cursor);ctx.strokeStyle=hi?'#f0f':'#9d39a1';ctx.lineWidth=2;stroke(q.x-7,q.y,q.x+7,q.y);stroke(q.x,q.y-7,q.x,q.y+7)}
+}
+function stroke(x1,y1,x2,y2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}
+function dot(p,color,label,ink){ctx.fillStyle=color;ctx.beginPath();ctx.arc(p.x,p.y,clamp(G.size*.3,5,14),0,Math.PI*2);ctx.fill();ctx.fillStyle=ink;ctx.font=`bold ${clamp(G.size*.27,9,13)}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,p.x,p.y)}
+function diagnose(expected,actual){if(S.activity==='line')return 'posição incorreta';if(eq(actual.x,expected.y)&&eq(actual.y,expected.x))return 'inversão x/y';if(eq(actual.x,-expected.x)&&eq(actual.y,-expected.y))return 'reflexão pela origem';if(eq(actual.x,-expected.y)&&eq(actual.y,-expected.x))return 'inversão e sinais';if(eq(actual.x,-expected.x)&&eq(actual.y,expected.y))return 'sinal de x';if(eq(actual.x,expected.x)&&eq(actual.y,-expected.y))return 'sinal de y';return 'coordenadas incorretas'}
+function feedback(s){$('feedback').textContent=s}
+function finish(s){S.ended=Date.now();S.session.done++;S.session.correct++;sessionInfo();feedback(s);$('next').classList.remove('hidden');$('next').focus()}
+function errorExplanation(expected,actual){const a=S.activity,c=S.challenge;
+ if(a==='robot'){
+  if(!eq(S.robot.x,c.target.x)||!eq(S.robot.y,c.target.y))return `O robô ainda está em ${pt(S.robot)}. A chegada é ${pt(c.target)}. Compare os deslocamentos horizontal e vertical.`;
+  if(S.moves!==c.minimum)return `Você chegou em ${S.moves} passos, mas o mínimo é ${c.minimum}. Use Desfazer ou Reiniciar para eliminar recuos.`;
+  if(c.order&&!robotOrderOk(c,S.robotTrail))return `Você chegou em ${c.minimum} passos, mas não respeitou a ordem: primeiro complete TODOS os passos no eixo ${c.order==='vertical'?'vertical':'horizontal'} e só depois avance no outro eixo. Use Desfazer ou Reiniciar.`;
+  return `Confira o percurso e tente novamente.`;
+ }
+ if(a==='air'){const chosen=c.planes.find(p=>p.id===String(actual));if(!chosen)return 'Selecione uma aeronave e confirme.';
+ const d=diagnose(c.answer,chosen);
+ if(d==='inversão x/y')return `Você selecionou ${pt(chosen)}, invertendo x e y. Primeiro localize x na horizontal e depois y na vertical.`;
+ if(d==='sinal de x'||d==='sinal de y'||d==='reflexão pela origem'||d==='inversão e sinais')return `A aeronave escolhida está em ${pt(chosen)}. ${d==='sinal de x'?'Confira o sinal horizontal.':d==='sinal de y'?'Confira o sinal vertical.':'Confira a ordem e os sinais das coordenadas.'}`;
+ if(eq(chosen.x,c.answer.x+1)&&eq(chosen.y,c.answer.y))return 'Você avançou uma unidade além de x. Comece a contagem no zero.';
+ return `Você selecionou ${pt(chosen)}; procure ${pt(c.answer)}. Confira os dois eixos.`;}
+ if(a==='line'){
+  const diff=actual-expected;
+  return `Você marcou ${fmt(actual)}. ${diff>0?'O ponto ficou à direita do alvo.':'O ponto ficou à esquerda do alvo.'} A diferença é de ${fmt(Math.abs(diff))} unidade(s). Cada divisão marcada vale ${fmt(c.step)}.`;
+ }
+ const d=diagnose(expected,actual);
+ const explanations={
+ 'inversão x/y':`Você trocou a ordem: marcou ${pt(actual)}. Em ${pt(expected)}, x vem primeiro (horizontal) e y depois (vertical).`,
+ 'reflexão pela origem':`Você inverteu os dois sinais. Sinais positivos e negativos indicam sentidos opostos a partir do zero.`,
+ 'inversão e sinais':`Você trocou a ordem das coordenadas e os sinais. Localize x no eixo horizontal antes de subir ou descer até y.`,
+ 'sinal de x':`A coordenada horizontal ficou do lado oposto do eixo y. Verifique o sinal de x.`,
+ 'sinal de y':`A coordenada vertical ficou do lado oposto do eixo x. Verifique o sinal de y.`};
+ return explanations[d]||`Você marcou ${pt(actual)}. Para chegar a ${pt(expected)}, percorra primeiro x na horizontal e depois y na vertical. Compare a quantidade de unidades em cada direção.`;
+}
+function hint(){const c=S.challenge,a=S.activity;let msg='';
+ if(a==='path'){const p=c.points[S.path.length];msg=S.errors>=2?`Comece na origem. Conte ${fmt(Math.abs(p.x))} unidade(s) ${p.x<0?'à esquerda':'à direita'} e ${fmt(Math.abs(p.y))} ${p.y<0?'para baixo':'para cima'}.`:'A primeira coordenada controla o movimento horizontal; a segunda, o vertical.'}
+ else if(a==='robot')msg=S.errors>=2?`Deslocamento horizontal: ${c.delta.x}; vertical: ${c.delta.y}.${c.order?' Complete primeiro todo o eixo '+c.order+'.':''} O mínimo permitido é ${c.minimum} passos.`:`Cada passo vale uma unidade. ${c.order?'Complete primeiro todo o deslocamento '+c.order+'; depois o outro eixo.':'Evite voltar pelo mesmo caminho.'}`;
+ else if(a==='air')msg=S.errors>=2?`Procure a interseção x=${fmt(c.answer.x)} e y=${fmt(c.answer.y)} e selecione a aeronave nessa posição.`:'Leia primeiro x no eixo horizontal e depois y no eixo vertical.';
+ else msg=S.errors>=2?`O alvo está em ${fmt(c.target)}. As marcações estão espaçadas de ${fmt(c.step)} unidade(s).`:(c.step===1?'Observe os números inteiros e conte os intervalos a partir do zero.':c.step===.5?'Cada unidade está dividida em duas metades de 0,5.':'Cada unidade está dividida em quatro quartos de 0,25.');
+ feedback('Dica: '+msg)
+}
+function robotOrderOk(c,trail){
+ if(!c.order)return true;
+ const first=c.order==='vertical'?'y':'x',second=first==='x'?'y':'x';
+ const firstSteps=Math.abs(c.target[first]-c.start[first]);
+ const secondSteps=Math.abs(c.target[second]-c.start[second]);
+ if(trail.length!==firstSteps+secondSteps+1)return false;
+ for(let i=1;i<trail.length;i++){
+  const before=trail[i-1],after=trail[i],axis=i<=firstSteps?first:second;
+  if(!eq(after[axis],before[axis]+Math.sign(c.target[axis]-c.start[axis])))return false;
+  if(!eq(after[axis==='x'?'y':'x'],before[axis==='x'?'y':'x']))return false;
+ }
+ return true;
+}
+function answer(actual){if(S.ended!==null)return;const c=S.challenge,a=S.activity;let expected,ok;
+ if(a==='path'){expected=c.points[S.path.length];ok=eq(expected.x,actual.x)&&eq(expected.y,actual.y)}
+ if(a==='air'){expected=c.answer;ok=String(actual)===c.answer.id}
+ if(a==='line'){expected=c.target;ok=eq(expected,actual)}
+ if(a==='robot'){expected=c.target;actual={...S.robot};const orderOk=robotOrderOk(c,S.robotTrail);ok=eq(actual.x,expected.x)&&eq(actual.y,expected.y)&&S.moves===c.minimum&&orderOk}
+ if(!ok){S.wrong=a==='air'?null:a==='robot'?(eq(S.robot.x,c.target.x)&&eq(S.robot.y,c.target.y)?null:{...S.robot}):a==='line'?actual:{...actual};S.errors++;feedback(`Tente novamente. ${errorExplanation(expected,actual)}${S.errors>=3?' Use “Preciso de uma dica” para receber orientação adicional.':''}`);return}
+ S.errors=0;S.wrong=null;
+ if(a==='path'){S.path.push({...actual});if(S.path.length<c.points.length){feedback(`Correto! Próximo ponto: ${pt(c.points[S.path.length])}.`)}else finish('Muito bem! Você construiu todo o caminho na ordem correta.')}
+ else finish(a==='robot'?`Correto! O robô chegou em ${S.moves} passos, pelo menor percurso possível na malha, respeitando os movimentos permitidos${c.order?' e a ordem exigida':''}.`:'Correto! Você localizou a posição.');update()
+}
+function mark(){if(S.activity==='robot'){answer({...S.robot});return}if(S.activity==='air'){const hit=S.challenge.planes.find(p=>eq(p.x,S.cursor.x)&&eq(p.y,S.cursor.y));answer(hit?hit.id:'nenhuma');return}answer(S.activity==='line'?S.cursor.x:{...S.cursor})}
+function move(dx,dy){if(S.ended!==null)return;const b=bounds(),step=S.activity==='line'?.25:S.activity==='robot'?1:S.level===3?.5:1;if(S.activity==='robot'){const nx=S.robot.x+dx,ny=S.robot.y+dy;if(nx<b.x0||nx>b.x1||ny<b.y0||ny>b.y1)return;S.robotUndo.push({robot:{...S.robot},moves:S.moves});S.robot={x:nx,y:ny};S.cursor={...S.robot};S.moves++;S.robotTrail.push({...S.robot})}else{S.cursor.x=clamp(Math.round((S.cursor.x+dx*step)/step)*step,b.x0,b.x1);S.cursor.y=S.activity==='line'?0:clamp(Math.round((S.cursor.y+dy*step)/step)*step,b.y0,b.y1)}announce();draw();progress();describeScene()}
+function announce(){$('cursorText').textContent=S.activity==='robot'?`Robô: ${pt(S.robot)} · ${S.moves} passo(s)`:S.activity==='line'?`Cursor na posição ${fmt(S.cursor.x)}`:`Cursor: ${pt(S.cursor)}`}
+function sessionInfo(){$('session').textContent=`Sessão: ${S.session.correct} desafio(s) concluído(s) · ${S.session.done} tentativa(s) finalizada(s). Sem armazenamento.`}
+function progress(){$('progress').textContent=S.activity==='path'?`${S.path.length}/${S.challenge.points.length} pontos`:S.activity==='robot'?`Passos: ${S.moves} · mínimo: ${S.challenge.minimum}`:''}
+function update(){const c=S.challenge;$('challengeText').textContent=c.prompt;$('undo').classList.toggle('hidden',S.activity!=='path'&&S.activity!=='robot');$('submit').textContent='Confirmar';$('submit').disabled=S.ended!==null;$('next').classList.toggle('hidden',S.ended===null);$('hint').disabled=S.ended!==null;announce();progress();draw();describeScene();sessionInfo();$('moveControls').querySelectorAll('[data-dir="up"],[data-dir="down"]').forEach(b=>b.classList.toggle('hidden',S.activity==='line'))}
+function restart(){S.path=[];S.moves=0;S.errors=0;S.wrong=null;S.robotUndo=[];S.robot=S.challenge.start?{...S.challenge.start}:{x:0,y:0};S.robotTrail=[{...S.robot}];S.cursor={...S.robot};if(S.activity==='line')S.cursor={x:0,y:0};S.ended=null;feedback('Desafio reiniciado.');update()}
+function fresh(){S.challenge=challenge();restart()}
+function pointer(e){if(S.ended!==null)return;const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left-canvas.clientLeft)*G.w/canvas.clientWidth,y=(e.clientY-r.top-canvas.clientTop)*G.h/canvas.clientHeight;const rawX=(x-G.origin.x)/G.size,rawY=(G.origin.y-y)/G.size;const step=S.activity==='line'?S.challenge.step:S.activity==='path'&&S.level===3?.5:1;const b=bounds(),px=clamp(Math.round(rawX/step)*step,b.x0,b.x1),py=clamp(Math.round(rawY/step)*step,b.y0,b.y1);
+ if(S.activity==='robot'){return}
+ if(S.activity==='line'){if(Math.abs(y-G.origin.y)>38)return;S.cursor={x:px,y:0}}
+ else if(S.activity==='air'){const hit=S.challenge.planes.map(p=>({p,d:Math.hypot(x-G.xy(p).x,y-G.xy(p).y)})).sort((a,b)=>a.d-b.d)[0];if(hit&&hit.d<=Math.min(24,Math.max(14,G.size*.48)))S.cursor={x:hit.p.x,y:hit.p.y};else{feedback('Selecione um círculo de aeronave.');return}}
+ else S.cursor={x:px,y:py};feedback('Posição selecionada. Confira e pressione Confirmar.');announce();draw();describeScene()}
+$('hint').onclick=hint;$('new').onclick=fresh;$('restart').onclick=restart;$('submit').onclick=mark;$('next').onclick=fresh;
+$('undo').onclick=()=>{if(S.ended!==null){feedback('Desafio concluído. Use Reiniciar para tentar novamente.');return}if(S.activity==='robot'&&S.robotUndo.length){const old=S.robotUndo.pop();S.robot=old.robot;S.cursor={...S.robot};S.moves=old.moves;S.robotTrail.pop();feedback('Último passo desfeito.')}else if(S.path.length){S.path.pop();feedback('Último ponto desfeito.')}else feedback('Nada para desfazer.');update()};
+for(const id of ['grade','activity','level'])$(id).onchange=()=>{S.grade=Number($('grade').value);S.activity=$('activity').value;S.level=Number($('level').value);fresh()};
+$('zoom').onchange=()=>{S.zoom=$('zoom').value;draw()};$('contrast').onchange=()=>{document.body.classList.toggle('contrast',$('contrast').value==='high');draw()};
+document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>{const d=b.dataset.dir;move(d==='right'?1:d==='left'?-1:0,d==='up'?1:d==='down'?-1:0)});
+canvas.onkeydown=e=>{const d={ArrowRight:[1,0],ArrowLeft:[-1,0],ArrowUp:[0,1],ArrowDown:[0,-1]};if(d[e.key]){e.preventDefault();move(...d[e.key])}else if(e.key==='Enter'||e.key===' '){e.preventDefault();mark()}};
+canvas.addEventListener('pointerdown',pointer);
+$('describe').onclick=()=>{const open=$('descriptionVisible').classList.toggle('hidden')===false;$('describe').setAttribute('aria-expanded',String(open));describeScene()};
+function describeScene(){const c=S.challenge;if(!c)return;const text=S.activity==='air'?`Aeronaves: ${c.planes.map(p=>`${p.id} em ${pt(p)}`).join('; ')}. Cursor em ${pt(S.cursor)}.`:S.activity==='robot'?`Início ${pt(c.start)}; destino ${pt(c.target)}; robô em ${pt(S.robot)}; ${S.moves} passos.`:S.activity==='path'?`Desafio: ${c.prompt}. Pontos já confirmados: ${S.path.length?S.path.map(pt).join(', '):'nenhum'}. Cursor em ${pt(S.cursor)}.`:`Reta de ${fmt(bounds().x0)} a ${fmt(bounds().x1)}; marcações de ${fmt(c.step)}. Cursor em ${fmt(S.cursor.x)}.`;$('sceneDescription').textContent=text;if(!$('descriptionVisible').classList.contains('hidden'))$('descriptionVisible').textContent=text}
+$('tilt').onclick=async()=>{if(S.tilt){S.tilt=false;S.tiltBase=null;$('tilt').textContent='Inclinação (opcional)';$('tiltStatus').textContent='Desligada';return}if(!('DeviceOrientationEvent'in window)){$('tiltStatus').textContent='Indisponível neste navegador; use as setas.';return}try{if(typeof DeviceOrientationEvent.requestPermission==='function'&&await DeviceOrientationEvent.requestPermission()!=='granted')throw Error('Permissão negada');S.tiltSample=null;S.tiltBase=null;S.tilt=true;$('tilt').textContent='Desativar inclinação';$('tiltStatus').textContent='Mantenha o aparelho imóvel para calibrar.'}catch(e){$('tiltStatus').textContent='Sem permissão: '+e.message+'. Use as setas.'}};
+window.addEventListener('deviceorientation',e=>{if(!S.tilt||S.ended!==null||e.gamma==null||e.beta==null)return;const now=Date.now();if(!S.tiltBase){if(!S.tiltSample)S.tiltSample={x:e.gamma,y:e.beta,t:now};if(now-S.tiltSample.t<800)return;S.tiltBase={x:e.gamma,y:e.beta};$('tilt').textContent='Inclinação: ligada';$('tiltStatus').textContent='Calibrada. Incline para explorar e pressione Confirmar.';return}if(now-S.tiltLast<380)return;const x=e.gamma-S.tiltBase.x,y=e.beta-S.tiltBase.y,dx=Math.abs(x)>16?Math.sign(x):0,dy=Math.abs(y)>16?-Math.sign(y):0;if(dx||dy){S.tiltLast=now;if(S.activity==='robot'){return}move(dx,dy)}});
+fresh();resizeObserver=new ResizeObserver(()=>draw());resizeObserver.observe(canvas);
+</script></body></html>
